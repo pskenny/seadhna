@@ -9,6 +9,7 @@ import java.io.IOException;
 
 import java.util.*;
 
+import io.github.pskenny.seadhna.io.IOUtils;
 import io.github.pskenny.seadhna.rss.*;
 
 import com.sun.syndication.feed.synd.*;
@@ -35,8 +36,14 @@ public class App {
      * Load feed urls if available
      */
     private Hashtable<String, SyndFeed> initFeeds() {
-        HashSet<String> feedUrls = loadFeedUrls(URL_FILE);
-
+        HashSet<String> feedUrls = null;
+        try {
+            feedUrls = IOUtils.pathToLines(URL_FILE);
+        } catch (IOException ex) {
+            System.err.println("Error reading from URLs file: " + URL_FILE);
+            // If you can't get the feeds from file it's a critical problem
+            System.exit(1);
+        }
         return loadFeeds(feedUrls);
     }
 
@@ -80,32 +87,6 @@ public class App {
         } catch (IOException ex) {
             System.err.println("Couldn't write output");
         }
-    }
-
-    /**
-     * Read URLs from file line-by-line and add to feeds table
-     * 
-     * @param String path Path to URLs file
-     * @return HashSet<String> Set with URLs from path
-     */
-    private HashSet<String> loadFeedUrls(String path) {
-        HashSet<String> urls = new HashSet<String>();
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(path));
-            String line;
-            while ((line = br.readLine()) != null)
-                // TODO do some checking on URL to make sure it's valid
-                if (!line.isEmpty())
-                    urls.add(line);
-            br.close();
-        } catch (IOException ex) {
-            // TODO suggest to make folder and empty file or do some diagnosing
-            System.err.println("Error reading from URLs file: " + URL_FILE);
-            System.exit(1);
-        }
-
-        return urls;
     }
 
     /**
