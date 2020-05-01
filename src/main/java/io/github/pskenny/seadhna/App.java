@@ -1,9 +1,7 @@
 package io.github.pskenny.seadhna;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -29,7 +27,7 @@ public class App {
         // Display UI
         HashSet<String> marked = displayUI(feeds);
         // Write marked feed item links to file
-        //writeMarked(marked);
+        // writeMarked(marked);
     }
 
     /**
@@ -67,7 +65,7 @@ public class App {
      * Write marked feed links out to file
      */
     public void writeMarked(HashSet<String> marked) {
-        if(marked.isEmpty())
+        if (marked.isEmpty())
             return;
 
         String outpath = "/path/to/write";
