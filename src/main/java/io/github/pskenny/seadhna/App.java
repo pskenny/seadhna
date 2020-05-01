@@ -27,7 +27,7 @@ public class App {
         // Display UI
         HashSet<String> marked = displayUI(feeds);
         // Write marked feed item links to file
-        // writeMarked(marked);
+        //IOUtils.writeIteratorToFile(marked.iterator(), "path/to/output");
     }
 
     /**
@@ -59,32 +59,6 @@ public class App {
         }
 
         return marked;
-    }
-
-    /**
-     * Write marked feed links out to file
-     */
-    public void writeMarked(HashSet<String> marked) {
-        if (marked.isEmpty())
-            return;
-
-        String outpath = "/path/to/write";
-
-        // generate appropriate string
-        StringBuilder sb = new StringBuilder();
-        for (String url : marked) {
-            sb.append(url);
-            sb.append("\n");
-        }
-
-        // write to file
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outpath)));
-            // bw.write(sb.toString());
-            bw.close();
-        } catch (IOException ex) {
-            System.err.println("Couldn't write output");
-        }
     }
 
     /**
