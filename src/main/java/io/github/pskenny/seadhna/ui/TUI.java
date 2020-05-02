@@ -18,6 +18,9 @@ import com.sun.syndication.feed.synd.*;
 
 public class TUI implements Runnable {
 
+    private final int MINIMUM_COLUMNS = 25;
+    private final int MINIMUM_ROWS = 5;
+
     private Hashtable<String, SyndFeed> feeds;
     private HashSet<String> marked = new HashSet<String>();
     private BasicWindow feedsWindow = null;
@@ -34,8 +37,14 @@ public class TUI implements Runnable {
     public void run() {
         try {
             Terminal terminal = new DefaultTerminalFactory().createTerminal();
+            if (terminal.getTerminalSize().getColumns() < MINIMUM_COLUMNS
+                    || terminal.getTerminalSize().getRows() < MINIMUM_ROWS) {
+                System.err.println("Does not meet minimum terminal size: " + MINIMUM_COLUMNS + "x" + MINIMUM_ROWS);
+                return;
+            }
             screen = new TerminalScreen(terminal);
             screen.startScreen();
+
             // Create and start gui
             gui = new MultiWindowTextGUI(screen, new DefaultWindowManager(), new EmptySpace(TextColor.ANSI.BLUE));
             displayWindow(getFeedsWindow());
@@ -101,7 +110,7 @@ public class TUI implements Runnable {
     }
 
     private TerminalSize getTerminalSize() {
-        return new TerminalSize(screen.getTerminalSize().getColumns() - 5, screen.getTerminalSize().getRows() - 5);
+        return new TerminalSize(screen.getTerminalSize().getColumns() - 5, screen.getTerminalSize().getRows() - 4);
     }
 
     public HashSet<String> getMarkedLinks() {
