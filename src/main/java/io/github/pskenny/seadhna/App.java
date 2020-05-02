@@ -87,7 +87,6 @@ public class App {
     }
 
     public static void main(String[] args) {
-        System.out.println("URL file: " + URL_FILE);
         new App();
     }
 }

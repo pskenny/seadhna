@@ -18,7 +18,6 @@ public class FeedBuilder {
         try {
             SyndFeedInput input = new SyndFeedInput();
             feed = input.build(new XmlReader(new URL(url)));
-            System.out.println("URL: " + url);
         } catch (MalformedURLException ex) {
             System.err.printf("URL error: %s\n", url);
         }  catch (IOException ex) {
