@@ -20,6 +20,8 @@ import com.sun.syndication.feed.synd.*;
 public class App {
     // Naive XDG path for url file
     public static String URL_FILE = System.getProperty("user.home") + File.separator + ".config/seadhna/urls";
+    private enum OUTPUT_MODE {FILE, STDOUT};
+
 
     public App() {
         // Get valid feeds
@@ -27,7 +29,7 @@ public class App {
         // Display UI
         HashSet<String> marked = displayUI(feeds);
         // output marked links
-        // IOUtils.writeIteratorToFile(marked.iterator(), "path/to/output");
+        writeMarkedLinksToOutput(marked, OUTPUT_MODE.STDOUT);
     }
 
     /**
@@ -84,6 +86,13 @@ public class App {
         });
 
         return f;
+    }
+
+    private void writeMarkedLinksToOutput(HashSet<String> marked, OUTPUT_MODE mode) {
+        switch(mode) {
+            case FILE: IOUtils.writeIteratorToFile(marked.iterator(), "path/to/output");
+            default: marked.forEach(System.out::println);
+        };
     }
 
     public static void main(String[] args) {
