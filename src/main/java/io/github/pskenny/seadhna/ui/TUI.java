@@ -2,9 +2,9 @@ package io.github.pskenny.seadhna.ui;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
@@ -13,7 +13,6 @@ import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
-
 import com.sun.syndication.feed.synd.*;
 
 public class TUI implements Runnable {
@@ -21,7 +20,7 @@ public class TUI implements Runnable {
     private final int MINIMUM_COLUMNS = 25;
     private final int MINIMUM_ROWS = 5;
 
-    private Hashtable<String, SyndFeed> feeds;
+    private ConcurrentHashMap<String, SyndFeed> feeds;
     private HashSet<String> marked = new HashSet<String>();
     private BasicWindow feedsWindow = null;
     private BasicWindow feedItemsWindow = null;
@@ -29,7 +28,7 @@ public class TUI implements Runnable {
     private MultiWindowTextGUI gui;
     private Screen screen;
 
-    public TUI(Hashtable<String, SyndFeed> feeds) {
+    public TUI(ConcurrentHashMap<String, SyndFeed> feeds) {
         this.feeds = feeds;
     }
 
@@ -61,28 +60,33 @@ public class TUI implements Runnable {
     }
 
     private BasicWindow getFeedsWindow() {
-        if (feedsWindow == null) {
+        if (feedsWindow == null)
             feedsWindow = new BasicWindow();
-            ActionListBox actionListBox = new ActionListBox(getTerminalSize());
-            // Add feeds to list
-            for (Map.Entry<String, SyndFeed> entry : feeds.entrySet()) {
-                SyndFeed feed = entry.getValue();
+        feedsWindow.setComponent(getFeedsList());
 
-                actionListBox.addItem(feed.getTitle(), () -> {
-                    displayWindow(getFeedItemsWindow(feed));
-                });
-            }
-            actionListBox.addItem("Quit", () -> {
-                feedsWindow.close();
-                try {
-                    screen.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            feedsWindow.setComponent(actionListBox);
-        }
         return feedsWindow;
+    }
+
+    private ActionListBox getFeedsList() {
+        ActionListBox actionListBox = new ActionListBox(getTerminalSize());
+        // Add feeds to list
+        for (Map.Entry<String, SyndFeed> entry : feeds.entrySet()) {
+            SyndFeed feed = entry.getValue();
+
+            actionListBox.addItem(feed.getTitle(), () -> {
+                displayWindow(getFeedItemsWindow(feed));
+            });
+        }
+        actionListBox.addItem("Quit", () -> {
+            feedsWindow.close();
+            try {
+                screen.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        return actionListBox;
     }
 
     private BasicWindow getFeedItemsWindow(SyndFeed feed) {
