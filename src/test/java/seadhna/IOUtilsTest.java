@@ -2,7 +2,6 @@ package seadhna;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -12,9 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.github.pskenny.seadhna.io.*;
-import jdk.jfr.Name;
 
-@Name("Test io.github.pskenny.seadhna.io.IOUtils")
 public class IOUtilsTest {
 
     @Test
@@ -28,7 +25,7 @@ public class IOUtilsTest {
             "https://www.youtube.com/feeds/videos.xml?channel_id=UC-notvalid123456abcdefg"));
         
         assertDoesNotThrow(() -> {
-            HashSet<String> actual = IOUtils.loadFeedUrls(urlPath);
+            HashSet<String> actual = IOUtils.pathToLines(urlPath);
 
             Assertions.assertEquals(expected, actual);
         });
