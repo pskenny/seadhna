@@ -1,14 +1,13 @@
 package io.github.pskenny.seadhna;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import java.util.*;
 
 import io.github.pskenny.seadhna.io.IOUtils;
 import io.github.pskenny.seadhna.rss.*;
+import io.github.pskenny.seadhna.ui.TUI;
 
 import com.sun.syndication.feed.synd.*;
 
@@ -26,8 +25,8 @@ public class App {
         Hashtable<String, SyndFeed> feeds = initFeeds();
         // Display UI
         HashSet<String> marked = displayUI(feeds);
-        // Write marked feed item links to file
-        //IOUtils.writeIteratorToFile(marked.iterator(), "path/to/output");
+        // output marked links
+        // IOUtils.writeIteratorToFile(marked.iterator(), "path/to/output");
     }
 
     /**
@@ -52,10 +51,14 @@ public class App {
         HashSet<String> marked = new HashSet<String>();
 
         try {
-            io.github.pskenny.seadhna.ui.TUI tui = new io.github.pskenny.seadhna.ui.TUI(feeds);
-            marked = tui.getMarked();
-        } catch (Exception ex) {
-            System.err.println("Couldn't run UI \n" + ex.getLocalizedMessage());
+            TUI tui = new TUI(feeds);
+            Thread ui = new Thread(tui);
+            ui.start();
+            // Wait for ui to finish before continuing
+            ui.join();
+            marked = tui.getMarkedLinks();
+        } catch (InterruptedException ex) {
+            System.err.println("Error during UI: " + ex.getMessage());
         }
 
         return marked;
