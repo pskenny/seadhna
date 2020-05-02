@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import io.github.pskenny.seadhna.io.IOUtils;
@@ -25,7 +26,7 @@ public class App {
 
     public App() {
         // Get valid feeds
-        Hashtable<String, SyndFeed> feeds = initFeeds();
+        ConcurrentHashMap<String, SyndFeed> feeds = initFeeds();
         // Display UI
         HashSet<String> marked = displayUI(feeds);
         // output marked links
@@ -35,7 +36,7 @@ public class App {
     /**
      * Load feed urls if available
      */
-    private Hashtable<String, SyndFeed> initFeeds() {
+    private ConcurrentHashMap<String, SyndFeed> initFeeds() {
         HashSet<String> feedUrls = null;
         try {
             feedUrls = IOUtils.pathToLines(URL_FILE);
@@ -50,7 +51,7 @@ public class App {
     /**
      * Display feeds in UI
      */
-    public HashSet<String> displayUI(Hashtable<String, SyndFeed> feeds) {
+    public HashSet<String> displayUI(ConcurrentHashMap<String, SyndFeed> feeds) {
         HashSet<String> marked = new HashSet<String>();
 
         try {
@@ -74,18 +75,18 @@ public class App {
      * @param feedUrls Set of URLs to retrieve RSS information from.
      * @return HashTable with URL and feed information.
      */
-    private Hashtable<String, SyndFeed> loadFeeds(HashSet<String> feedUrls) {
-        Hashtable<String, SyndFeed> f = new Hashtable<String, SyndFeed>();
+    private ConcurrentHashMap<String, SyndFeed> loadFeeds(HashSet<String> feedUrls) {
+        ConcurrentHashMap<String, SyndFeed> feeds = new ConcurrentHashMap<String, SyndFeed>();
 
         Stream<String> s = feedUrls.parallelStream();
         s.forEach((url) -> {
             SyndFeed feed = FeedBuilder.getFeed(url);
             // Only add feeds which URL worked
             if (feed != null)
-                f.put(url, feed);
+                feeds.put(url, feed);
         });
 
-        return f;
+        return feeds;
     }
 
     private void writeMarkedLinksToOutput(HashSet<String> marked, OUTPUT_MODE mode) {
