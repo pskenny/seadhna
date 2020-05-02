@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import io.github.pskenny.seadhna.io.IOUtils;
 import io.github.pskenny.seadhna.rss.*;
@@ -74,13 +75,13 @@ public class App {
     private Hashtable<String, SyndFeed> loadFeeds(HashSet<String> feedUrls) {
         Hashtable<String, SyndFeed> f = new Hashtable<String, SyndFeed>();
 
-        // loop URLs and make feeds
-        for (String url : feedUrls) {
+        Stream<String> s = feedUrls.parallelStream();
+        s.forEach((url) -> {
             SyndFeed feed = FeedBuilder.getFeed(url);
             // Only add feeds which URL worked
             if (feed != null)
                 f.put(url, feed);
-        }
+        });
 
         return f;
     }
