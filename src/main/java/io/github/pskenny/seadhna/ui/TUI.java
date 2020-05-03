@@ -15,6 +15,8 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.sun.syndication.feed.synd.*;
 
+import io.github.pskenny.seadhna.io.NIOUtils;
+
 public class TUI implements Runnable {
 
     private final int MINIMUM_COLUMNS = 25;
@@ -74,6 +76,7 @@ public class TUI implements Runnable {
             SyndFeed feed = entry.getValue();
 
             actionListBox.addItem(feed.getTitle(), () -> {
+
                 displayWindow(getFeedItemsWindow(feed));
             });
         }
@@ -99,8 +102,29 @@ public class TUI implements Runnable {
     }
 
     private ActionListBox getFeedItemList(SyndFeed feed) {
-        ActionListBox actionListBox = new ActionListBox(getTerminalSize());
         List<SyndEntry> items = feed.getEntries();
+        ActionListBox actionListBox = new ActionListBox(getTerminalSize()) {
+            @Override
+            public Result handleKeyStroke(com.googlecode.lanterna.input.KeyStroke keyStroke) {
+                // Try and open VLC on 'v' input
+                if (keyStroke.getCharacter() == Character.valueOf('v')) {
+                    // TODO handle indexoutofboundsexception,
+                    String url = items.get(this.getSelectedIndex()).getLink();
+                    // Check if list item at list index refers to a valid URL
+                    if (url != null && NIOUtils.isUrl(url)) {
+                        // Open VLC
+                        ProcessBuilder pb = new ProcessBuilder("vlc", items.get(this.getSelectedIndex()).getLink());
+                        try {
+                            pb.start();
+                        } catch (IOException ex) {
+                            System.err.println("Couldn't open VLC");
+                        }
+                    }
+
+                }
+                return super.handleKeyStroke(keyStroke);
+            }
+        };
 
         for (SyndEntry entry : items) {
             actionListBox.addItem(entry.getTitle(), () -> {
@@ -110,6 +134,7 @@ public class TUI implements Runnable {
         actionListBox.addItem("Back", () -> {
             displayWindow(getFeedsWindow());
         });
+
         return actionListBox;
     }
 
