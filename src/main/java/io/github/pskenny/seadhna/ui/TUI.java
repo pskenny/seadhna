@@ -111,7 +111,7 @@ public class TUI implements Runnable {
                     // TODO handle indexoutofboundsexception,
                     String url = items.get(this.getSelectedIndex()).getLink();
                     // Check if list item at list index refers to a valid URL
-                    if (url != null && NIOUtils.isUrl(url)) {
+                    if (url != null && NIOUtils.isValidUrlPath(url)) {
                         // Open VLC
                         ProcessBuilder pb = new ProcessBuilder("vlc", items.get(this.getSelectedIndex()).getLink());
                         try {
