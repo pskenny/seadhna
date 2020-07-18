@@ -32,6 +32,13 @@
       <artifactId>lanterna</artifactId>
       <version>3.0.2</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.12</version>
+      <scope>provided</scope>
+    </dependency>
     <!--https://github.com/omajid/xdg-java -->
     <!-- https://github.com/sapher/youtubedl-java -->
     <dependency>
