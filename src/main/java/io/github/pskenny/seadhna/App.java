@@ -10,6 +10,10 @@ import java.util.stream.Stream;
 import io.github.pskenny.seadhna.io.IOUtils;
 import io.github.pskenny.seadhna.rss.*;
 import io.github.pskenny.seadhna.ui.TUI;
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 import com.sun.syndication.feed.synd.*;
 
@@ -21,16 +25,21 @@ import com.sun.syndication.feed.synd.*;
 public class App {
     // Naive XDG path for url file
     public static String URL_FILE = System.getProperty("user.home") + File.separator + ".config/seadhna/urls";
-    private enum OUTPUT_MODE {FILE, STDOUT};
 
-
-    public App() {
+    public App(String file) {
         // Get valid feeds
         ConcurrentHashMap<String, SyndFeed> feeds = initFeeds();
         // Display UI
         HashSet<String> marked = displayUI(feeds);
         // output marked links
-        writeMarkedLinksToOutput(marked, OUTPUT_MODE.STDOUT);
+        if(file == null) {
+            marked.forEach(System.out::println);
+        } else {
+            boolean success = IOUtils.writeIteratorToFile(marked.iterator(), file);
+            if(!success) {
+                System.err.println("Could not write to file: \"" + file + "\"");
+            }
+        }
     }
 
     /**
@@ -89,14 +98,19 @@ public class App {
         return feeds;
     }
 
-    private void writeMarkedLinksToOutput(HashSet<String> marked, OUTPUT_MODE mode) {
-        switch(mode) {
-            case FILE: IOUtils.writeIteratorToFile(marked.iterator(), "path/to/output");
-            default: marked.forEach(System.out::println);
-        };
-    }
-
     public static void main(String[] args) {
-        new App();
+        ArgumentParser parser = ArgumentParsers.newFor("seadhna").build()
+                .description("Mark YouTube channel video URLs to write out.").version("0.1");
+        parser.addArgument("-f", "-file").metavar("FILE").type(String.class).help("File to write URLs to");
+
+        try {
+            Namespace res = parser.parseArgs(args);
+            // fileArgument is null if no file given
+            String fileArgument = res.getString("f");
+
+            new App(fileArgument);
+        } catch (ArgumentParserException e) {
+            parser.handleError(e);
+        }
     }
 }
