@@ -18,7 +18,20 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
+
+
   <dependencies>
+    <dependency>
+      <groupId>com.github.sealedtx</groupId>
+      <artifactId>java-youtube-downloader</artifactId>
+      <version>2.2.5</version>
+    </dependency>
     <dependency>
       <groupId>net.sourceforge.argparse4j</groupId>
       <artifactId>argparse4j</artifactId>
