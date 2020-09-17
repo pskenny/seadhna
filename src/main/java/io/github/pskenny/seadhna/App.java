@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 import io.github.pskenny.seadhna.io.IOUtils;
 import io.github.pskenny.seadhna.rss.*;
@@ -18,7 +17,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import com.sun.syndication.feed.synd.*;
 
 /**
- * Give me Youtube videos, just like Séadhna Of House Clam does.
+ * Give me Youtube videos, just like Séadhna Of House Clam does 👍 🎥
  * 
  * @author Paul Kenny
  */
@@ -32,18 +31,11 @@ public class App {
         // Display UI
         HashSet<String> marked = displayUI(feeds);
         // output marked links
-        if(file == null) {
-            marked.forEach(System.out::println);
-        } else {
-            boolean success = IOUtils.writeIteratorToFile(marked.iterator(), file);
-            if(!success) {
-                System.err.println("Could not write to file: \"" + file + "\"");
-            }
-        }
+        writeMarkedURLs(file, marked);
     }
 
     /**
-     * Load feed urls if available
+     * Load feed URLs.
      */
     private ConcurrentHashMap<String, SyndFeed> initFeeds() {
         HashSet<String> feedUrls = null;
@@ -87,8 +79,8 @@ public class App {
     private ConcurrentHashMap<String, SyndFeed> loadFeeds(HashSet<String> feedUrls) {
         ConcurrentHashMap<String, SyndFeed> feeds = new ConcurrentHashMap<String, SyndFeed>();
 
-        Stream<String> s = feedUrls.parallelStream();
-        s.forEach((url) -> {
+        // Make feed items from all RSS feed URLs
+        feedUrls.parallelStream().forEach(url -> {
             SyndFeed feed = FeedBuilder.getFeed(url);
             // Only add feeds which URL worked
             if (feed != null)
@@ -96,6 +88,22 @@ public class App {
         });
 
         return feeds;
+    }
+
+    /**
+     * Write URLs to file path or stdout, if path is null.
+     */
+    private void writeMarkedURLs(String filePath,  HashSet<String> urls) {
+        // Write to stdout if no file path
+        if(filePath == null) {
+            urls.forEach(System.out::println);
+        } else {
+            boolean success = IOUtils.writeIteratorToFile(urls.iterator(), filePath);
+            // check if successful, output error message on failure
+            if(!success) {
+                System.err.println("Could not write to file: \"" + filePath + "\"");
+            }
+        }
     }
 
     public static void main(String[] args) {

@@ -36,8 +36,7 @@ public class TUI implements Runnable {
 
     @Override
     public void run() {
-        try {
-            Terminal terminal = new DefaultTerminalFactory().createTerminal();
+        try (Terminal terminal = new DefaultTerminalFactory().createTerminal()) {
             if (terminal.getTerminalSize().getColumns() < MINIMUM_COLUMNS
                     || terminal.getTerminalSize().getRows() < MINIMUM_ROWS) {
                 System.err.println("Does not meet minimum terminal size: " + MINIMUM_COLUMNS + "x" + MINIMUM_ROWS);
@@ -46,14 +45,17 @@ public class TUI implements Runnable {
             screen = new TerminalScreen(terminal);
             screen.startScreen();
 
-            // Create and start gui
+            // Create and start GUI
             gui = new MultiWindowTextGUI(screen, new DefaultWindowManager(), new EmptySpace(TextColor.ANSI.BLUE));
             displayWindow(getFeedsWindow());
-        } catch (Exception e) {
-            System.err.println("Couldn't start terminal user-interface");
+        } catch (IOException ex) {
+            System.err.println("Couldn't output to terminal");
         }
     }
 
+    /**
+     * Display window given, removing other windows if present.
+     */
     private void displayWindow(Window window) {
         Window w = gui.getActiveWindow();
         if (w != null)
@@ -61,6 +63,9 @@ public class TUI implements Runnable {
         gui.addWindowAndWait(window);
     }
 
+    /**
+     * Return window with feeds
+     */
     private BasicWindow getFeedsWindow() {
         if (feedsWindow == null)
             feedsWindow = new BasicWindow();
@@ -69,6 +74,9 @@ public class TUI implements Runnable {
         return feedsWindow;
     }
 
+    /**
+     * Returns list of RSS feeds.
+     */
     private ActionListBox getFeedsList() {
         ActionListBox actionListBox = new ActionListBox(getTerminalSize());
         // Add feeds to list
@@ -80,6 +88,7 @@ public class TUI implements Runnable {
                 displayWindow(getFeedItemsWindow(feed));
             });
         }
+        // Add "Quit" item
         actionListBox.addItem("Quit", () -> {
             feedsWindow.close();
             try {
@@ -92,6 +101,9 @@ public class TUI implements Runnable {
         return actionListBox;
     }
 
+    /**
+     * Return window containing feeds items from feed given.
+     */
     private BasicWindow getFeedItemsWindow(SyndFeed feed) {
         if (feedItemsWindow == null)
             feedItemsWindow = new BasicWindow();
@@ -101,9 +113,13 @@ public class TUI implements Runnable {
         return feedItemsWindow;
     }
 
+    /**
+     * Return list of feed items from feed given.
+     */
     private ActionListBox getFeedItemList(SyndFeed feed) {
         List<SyndEntry> items = feed.getEntries();
         ActionListBox actionListBox = new ActionListBox(getTerminalSize()) {
+            // Add 'v' keystroke on this list to open feed item link in VLC
             @Override
             public Result handleKeyStroke(com.googlecode.lanterna.input.KeyStroke keyStroke) {
                 // Try and open VLC on 'v' input
@@ -113,35 +129,42 @@ public class TUI implements Runnable {
                     // Check if list item at list index refers to a valid URL
                     if (url != null && NIOUtils.isValidUrlPath(url)) {
                         // Open VLC
-                        ProcessBuilder pb = new ProcessBuilder("vlc", items.get(this.getSelectedIndex()).getLink());
+                        ProcessBuilder processBuilder = new ProcessBuilder("vlc",
+                                items.get(this.getSelectedIndex()).getLink());
                         try {
-                            pb.start();
+                            processBuilder.start();
                         } catch (IOException ex) {
                             System.err.println("Couldn't open VLC");
                         }
                     }
-
                 }
                 return super.handleKeyStroke(keyStroke);
             }
         };
-
+        // Add feed item titles to list and add action to add their links to the marked
+        // list
         for (SyndEntry entry : items) {
-            actionListBox.addItem(entry.getTitle(), () -> {
-                marked.add(entry.getLink());
-            });
+            actionListBox.addItem(entry.getTitle(), () -> marked.add(entry.getLink()));
         }
-        actionListBox.addItem("Back", () -> {
-            displayWindow(getFeedsWindow());
-        });
+
+        // Add Back button to open feeds window
+        actionListBox.addItem("Back", () ->
+
+        displayWindow(getFeedsWindow()));
 
         return actionListBox;
     }
 
+    /**
+     * 
+     */
     private TerminalSize getTerminalSize() {
         return new TerminalSize(screen.getTerminalSize().getColumns() - 5, screen.getTerminalSize().getRows() - 4);
     }
 
+    /**
+     * 
+     */
     public HashSet<String> getMarkedLinks() {
         return marked;
     }
