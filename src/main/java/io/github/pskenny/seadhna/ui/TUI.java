@@ -18,6 +18,7 @@ import com.sun.syndication.feed.synd.*;
 import io.github.pskenny.seadhna.io.NIOUtils;
 
 public class TUI implements Runnable {
+    private Controller controller;
 
     private final int MINIMUM_COLUMNS = 25;
     private final int MINIMUM_ROWS = 5;
@@ -32,10 +33,17 @@ public class TUI implements Runnable {
 
     public TUI(ConcurrentHashMap<String, SyndFeed> feeds) {
         this.feeds = feeds;
+
+        controller = new Controller();
     }
 
     @Override
     public void run() {
+        /*
+        - Start ui
+        - load urls, call backs for updating ui
+        */
+
         try (Terminal terminal = new DefaultTerminalFactory().createTerminal()) {
             if (terminal.getTerminalSize().getColumns() < MINIMUM_COLUMNS
                     || terminal.getTerminalSize().getRows() < MINIMUM_ROWS) {

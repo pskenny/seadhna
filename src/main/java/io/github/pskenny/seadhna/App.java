@@ -23,69 +23,9 @@ import com.sun.syndication.feed.synd.*;
  */
 public class App {
 
-    public App(String file) {
-        // Get valid feeds
-        ConcurrentHashMap<String, SyndFeed> feeds = initFeeds();
-        // Display UI
-        HashSet<String> marked = displayUI(feeds);
-        // output marked links
-        writeMarkedURLs(file, marked);
-    }
-
-    /**
-     * Load feed URLs.
-     */
-    private ConcurrentHashMap<String, SyndFeed> initFeeds() {
-        HashSet<String> feedUrls = null;
-        try {
-            feedUrls = IOUtils.pathToLines(URL_FILE);
-        } catch (IOException ex) {
-            System.err.println("Error reading from URLs file: " + URL_FILE);
-            // If you can't get the feeds from file it's a critical problem
-            System.exit(1);
-        }
-        return loadFeeds(feedUrls);
-    }
-
-    /**
-     * Display feeds in UI
-     */
-    public HashSet<String> displayUI(ConcurrentHashMap<String, SyndFeed> feeds) {
-        HashSet<String> marked = new HashSet<String>();
-
-        try {
-            TUI tui = new TUI(feeds);
-            Thread ui = new Thread(tui);
-            ui.start();
-            // Wait for ui to finish before continuing
-            ui.join();
-            marked = tui.getMarkedLinks();
-        } catch (InterruptedException ex) {
-            System.err.println("Error during UI: " + ex.getMessage());
-        }
-
-        return marked;
-    }
-
-    /**
-     * Load feed information from URL(s). Only returns elements for valid URLs and
-     * valid RSS linked in URLs.
-     * 
-     * @param feedUrls Set of URLs to retrieve RSS information from.
-     * @return HashTable with URL and feed information.
-     */
-    private ConcurrentHashMap<String, SyndFeed> loadFeeds(HashSet<String> feedUrls) {
-        ConcurrentHashMap<String, SyndFeed> feeds = new ConcurrentHashMap<String, SyndFeed>();
-
-        // Make feed items from all RSS feed URLs
-        feedUrls.parallelStream().forEach(url -> {
-            SyndFeed feed = FeedBuilder.getFeed(url);
-            // Only add feeds which URL worked
-            if (feed != null)
-                feeds.put(url, feed);
-        });
-
-        return feeds;
+    public App() {
+        TUI tui = new TUI();
+        tui.getMarkedLinks();
     }
 
     /**
@@ -114,7 +54,7 @@ public class App {
             // fileArgument is null if no file given
             String fileArgument = res.getString("f");
 
-            new App(fileArgument);
+            new App();
         } catch (ArgumentParserException e) {
             parser.handleError(e);
         }
