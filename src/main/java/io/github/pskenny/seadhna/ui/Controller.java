@@ -3,6 +3,7 @@ package io.github.pskenny.seadhna.ui;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.sun.syndication.feed.synd.*;
 
@@ -10,12 +11,16 @@ import io.github.pskenny.seadhna.io.IOUtils;
 import io.github.pskenny.seadhna.rss.FeedBuilder;
 
 public class Controller {
-    ConcurrentHashMap<String, SyndFeed> feeds;
+    private ConcurrentHashMap<String, SyndFeed> feeds;
 
     public Controller() {
         feeds = new ConcurrentHashMap<>();
-        
+
         loadFeeds();
+    }
+
+    public ConcurrentMap<String, SyndFeed> getFeeds() {
+        return feeds;
     }
 
     public void loadFeeds() {
