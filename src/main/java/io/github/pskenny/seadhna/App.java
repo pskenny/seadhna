@@ -22,8 +22,6 @@ import com.sun.syndication.feed.synd.*;
  * @author Paul Kenny
  */
 public class App {
-    // Naive XDG path for url file
-    public static String URL_FILE = System.getProperty("user.home") + File.separator + ".config/seadhna/urls";
 
     public App(String file) {
         // Get valid feeds
