@@ -1,13 +1,8 @@
 package io.github.pskenny.seadhna;
 
-import java.io.File;
-import java.io.IOException;
-
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.pskenny.seadhna.io.IOUtils;
-import io.github.pskenny.seadhna.rss.*;
 import io.github.pskenny.seadhna.ui.TUI;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -23,15 +18,17 @@ import com.sun.syndication.feed.synd.*;
  */
 public class App {
 
+    private static String filePath;
+
     public App() {
         TUI tui = new TUI();
-        tui.getMarkedLinks();
+        writeMarkedURLs(tui.getMarkedLinks());
     }
 
     /**
      * Write URLs to file path or stdout, if path is null.
      */
-    private void writeMarkedURLs(String filePath,  HashSet<String> urls) {
+    private void writeMarkedURLs(Set<String> urls) {
         // Write to stdout if no file path
         if(filePath == null) {
             urls.forEach(System.out::println);
@@ -51,8 +48,8 @@ public class App {
 
         try {
             Namespace res = parser.parseArgs(args);
-            // fileArgument is null if no file given
-            String fileArgument = res.getString("f");
+            // returns null if no file given
+            filePath = res.getString("f");
 
             new App();
         } catch (ArgumentParserException e) {
