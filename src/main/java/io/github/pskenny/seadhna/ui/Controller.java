@@ -32,7 +32,6 @@ public class Controller {
         } catch (IOException ex) {
             System.err.println("Error reading from URLs file: " + IOUtils.URL_FILE);
         }
-
     }
 
     public void loadFeed(String url) {
@@ -41,4 +40,5 @@ public class Controller {
         if (feed != null)
             feeds.put(url, feed);
     }
+
 }
