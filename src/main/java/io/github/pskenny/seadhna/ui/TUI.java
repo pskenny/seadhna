@@ -1,10 +1,7 @@
 package io.github.pskenny.seadhna.ui;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
@@ -13,36 +10,27 @@ import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
+
 import com.sun.syndication.feed.synd.*;
 
 import io.github.pskenny.seadhna.io.NIOUtils;
 
-public class TUI implements Runnable {
+public class TUI {
     private Controller controller;
 
-    private final int MINIMUM_COLUMNS = 25;
-    private final int MINIMUM_ROWS = 5;
+    private static final int MINIMUM_COLUMNS = 25;
+    private static final int MINIMUM_ROWS = 5;
 
-    private ConcurrentHashMap<String, SyndFeed> feeds;
-    private HashSet<String> marked = new HashSet<String>();
-    private BasicWindow feedsWindow = null;
-    private BasicWindow feedItemsWindow = null;
+    private HashSet<String> marked;
+    private BasicWindow feedsWindow;
+    private FeedItemsWindow feedItemsWindow;
 
     private MultiWindowTextGUI gui;
     private Screen screen;
 
-    public TUI(ConcurrentHashMap<String, SyndFeed> feeds) {
-        this.feeds = feeds;
-
+    public TUI() {
         controller = new Controller();
-    }
-
-    @Override
-    public void run() {
-        /*
-        - Start ui
-        - load urls, call backs for updating ui
-        */
+        marked = new HashSet<>();
 
         try (Terminal terminal = new DefaultTerminalFactory().createTerminal()) {
             if (terminal.getTerminalSize().getColumns() < MINIMUM_COLUMNS
@@ -55,20 +43,10 @@ public class TUI implements Runnable {
 
             // Create and start GUI
             gui = new MultiWindowTextGUI(screen, new DefaultWindowManager(), new EmptySpace(TextColor.ANSI.BLUE));
-            displayWindow(getFeedsWindow());
+            gui.addWindowAndWait((getFeedsWindow());
         } catch (IOException ex) {
             System.err.println("Couldn't output to terminal");
         }
-    }
-
-    /**
-     * Display window given, removing other windows if present.
-     */
-    private void displayWindow(Window window) {
-        Window w = gui.getActiveWindow();
-        if (w != null)
-            gui.removeWindow(w);
-        gui.addWindowAndWait(window);
     }
 
     /**
@@ -88,13 +66,9 @@ public class TUI implements Runnable {
     private ActionListBox getFeedsList() {
         ActionListBox actionListBox = new ActionListBox(getTerminalSize());
         // Add feeds to list
-        for (Map.Entry<String, SyndFeed> entry : feeds.entrySet()) {
+        for (Map.Entry<String, SyndFeed> entry : controller.getFeeds().entrySet()) {
             SyndFeed feed = entry.getValue();
-
-            actionListBox.addItem(feed.getTitle(), () -> {
-
-                displayWindow(getFeedItemsWindow(feed));
-            });
+            actionListBox.addItem(feed.getTitle(), () -> gui.addWindowAndWait(new FeedItemsWindow(feed)));
         }
         // Add "Quit" item
         actionListBox.addItem("Quit", () -> {
@@ -110,60 +84,6 @@ public class TUI implements Runnable {
     }
 
     /**
-     * Return window containing feeds items from feed given.
-     */
-    private BasicWindow getFeedItemsWindow(SyndFeed feed) {
-        if (feedItemsWindow == null)
-            feedItemsWindow = new BasicWindow();
-
-        feedItemsWindow.setComponent(getFeedItemList(feed));
-
-        return feedItemsWindow;
-    }
-
-    /**
-     * Return list of feed items from feed given.
-     */
-    private ActionListBox getFeedItemList(SyndFeed feed) {
-        List<SyndEntry> items = feed.getEntries();
-        ActionListBox actionListBox = new ActionListBox(getTerminalSize()) {
-            // Add 'v' keystroke on this list to open feed item link in VLC
-            @Override
-            public Result handleKeyStroke(com.googlecode.lanterna.input.KeyStroke keyStroke) {
-                // Try and open VLC on 'v' input
-                if (keyStroke.getCharacter() == Character.valueOf('v')) {
-                    // TODO handle indexoutofboundsexception,
-                    String url = items.get(this.getSelectedIndex()).getLink();
-                    // Check if list item at list index refers to a valid URL
-                    if (url != null && NIOUtils.isValidUrlPath(url)) {
-                        // Open VLC
-                        ProcessBuilder processBuilder = new ProcessBuilder("vlc",
-                                items.get(this.getSelectedIndex()).getLink());
-                        try {
-                            processBuilder.start();
-                        } catch (IOException ex) {
-                            System.err.println("Couldn't open VLC");
-                        }
-                    }
-                }
-                return super.handleKeyStroke(keyStroke);
-            }
-        };
-        // Add feed item titles to list and add action to add their links to the marked
-        // list
-        for (SyndEntry entry : items) {
-            actionListBox.addItem(entry.getTitle(), () -> marked.add(entry.getLink()));
-        }
-
-        // Add Back button to open feeds window
-        actionListBox.addItem("Back", () ->
-
-        displayWindow(getFeedsWindow()));
-
-        return actionListBox;
-    }
-
-    /**
      * 
      */
     private TerminalSize getTerminalSize() {
@@ -173,7 +93,7 @@ public class TUI implements Runnable {
     /**
      * 
      */
-    public HashSet<String> getMarkedLinks() {
+    public Set<String> getMarkedLinks() {
         return marked;
     }
 }
