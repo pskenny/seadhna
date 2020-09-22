@@ -13,17 +13,11 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import com.sun.syndication.feed.synd.*;
 
-import io.github.pskenny.seadhna.io.NIOUtils;
-
 public class TUI {
     private Controller controller;
 
-    private static final int MINIMUM_COLUMNS = 25;
-    private static final int MINIMUM_ROWS = 5;
-
     private HashSet<String> marked;
     private BasicWindow feedsWindow;
-    private FeedItemsWindow feedItemsWindow;
 
     private MultiWindowTextGUI gui;
     private Screen screen;
@@ -33,17 +27,12 @@ public class TUI {
         marked = new HashSet<>();
 
         try (Terminal terminal = new DefaultTerminalFactory().createTerminal()) {
-            if (terminal.getTerminalSize().getColumns() < MINIMUM_COLUMNS
-                    || terminal.getTerminalSize().getRows() < MINIMUM_ROWS) {
-                System.err.println("Does not meet minimum terminal size: " + MINIMUM_COLUMNS + "x" + MINIMUM_ROWS);
-                return;
-            }
             screen = new TerminalScreen(terminal);
             screen.startScreen();
 
             // Create and start GUI
             gui = new MultiWindowTextGUI(screen, new DefaultWindowManager(), new EmptySpace(TextColor.ANSI.BLUE));
-            gui.addWindowAndWait((getFeedsWindow());
+            gui.addWindowAndWait(getFeedsWindow());
         } catch (IOException ex) {
             System.err.println("Couldn't output to terminal");
         }
@@ -68,7 +57,8 @@ public class TUI {
         // Add feeds to list
         for (Map.Entry<String, SyndFeed> entry : controller.getFeeds().entrySet()) {
             SyndFeed feed = entry.getValue();
-            actionListBox.addItem(feed.getTitle(), () -> gui.addWindowAndWait(new FeedItemsWindow(feed)));
+            actionListBox.addItem(feed.getTitle(),
+                    () -> gui.addWindowAndWait(new FeedItemsWindow(feed)));
         }
         // Add "Quit" item
         actionListBox.addItem("Quit", () -> {
@@ -83,16 +73,10 @@ public class TUI {
         return actionListBox;
     }
 
-    /**
-     * 
-     */
     private TerminalSize getTerminalSize() {
         return new TerminalSize(screen.getTerminalSize().getColumns() - 5, screen.getTerminalSize().getRows() - 4);
     }
 
-    /**
-     * 
-     */
     public Set<String> getMarkedLinks() {
         return marked;
     }
