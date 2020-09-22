@@ -17,10 +17,10 @@ public class TUI {
     private Controller controller;
 
     private HashSet<String> marked;
-    private BasicWindow feedsWindow;
 
     private MultiWindowTextGUI gui;
     private Screen screen;
+    private BasicWindow feedsWindow;
 
     public TUI() {
         controller = new Controller();
@@ -32,21 +32,14 @@ public class TUI {
 
             // Create and start GUI
             gui = new MultiWindowTextGUI(screen, new DefaultWindowManager(), new EmptySpace(TextColor.ANSI.BLUE));
-            gui.addWindowAndWait(getFeedsWindow());
+
+            feedsWindow = new BasicWindow();
+            feedsWindow.setComponent(getFeedsList());
+
+            gui.addWindowAndWait(feedsWindow);
         } catch (IOException ex) {
             System.err.println("Couldn't output to terminal");
         }
-    }
-
-    /**
-     * Return window with feeds
-     */
-    private BasicWindow getFeedsWindow() {
-        if (feedsWindow == null)
-            feedsWindow = new BasicWindow();
-        feedsWindow.setComponent(getFeedsList());
-
-        return feedsWindow;
     }
 
     /**
@@ -56,9 +49,17 @@ public class TUI {
         ActionListBox actionListBox = new ActionListBox(getTerminalSize());
         // Add feeds to list
         for (Map.Entry<String, SyndFeed> entry : controller.getFeeds().entrySet()) {
-            SyndFeed feed = entry.getValue();
-            actionListBox.addItem(feed.getTitle(),
-                    () -> gui.addWindowAndWait(new FeedItemsWindow(feed)));
+            actionListBox.addItem(entry.getValue().getTitle(),
+                    () -> {
+                        FeedItemsWindow fiw = new FeedItemsWindow(entry.getValue(), getTerminalSize(), marked);
+                        fiw.addWindowListener(new ListenableBasicWindow.BasicWindowListener(){
+                            @Override
+                            public void onClosing() {
+                                marked.addAll(fiw.getMarked());
+                            }
+                        });
+                        gui.addWindowAndWait(fiw);
+                    });
         }
         // Add "Quit" item
         actionListBox.addItem("Quit", () -> {
