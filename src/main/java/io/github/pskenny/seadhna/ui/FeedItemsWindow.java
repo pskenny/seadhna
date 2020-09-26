@@ -71,11 +71,7 @@ public class FeedItemsWindow extends ListenableBasicWindow {
 
         @Override
         public String toString() {
-            if (marked) {
-                return Symbols.BULLET + title;
-            } else {
-                return title;
-            }
+            return marked ? Symbols.BULLET + title : title;
         }
     }
 }
