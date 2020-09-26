@@ -57,6 +57,9 @@ public class FeedItemsWindow extends ListenableBasicWindow {
             toggleMarked();
         }
 
+        /**
+         * Toggle is feed item is marked.
+         */
         public void toggleMarked() {
             marked = !marked;
             if(marked) {
