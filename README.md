@@ -27,7 +27,7 @@ Mark YouTube channel video URLs to output to [stdout](https://en.wikipedia.org/w
 > git clone https://github.com/pskenny/seadhna # Clone seadhna
 > cd seadhna
 > mvn clean compile assembly:single # Generate jar
-> java -jar ./target/seadhna-0.1a-jar-with-dependencies.jar # Run jar
+> java -jar ./target/seadhna-0.1.0-jar-with-dependencies.jar # Run jar
 ```
 
 ## 🚀 Running
