@@ -13,7 +13,8 @@ import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
-import com.sun.syndication.feed.synd.*;
+
+import com.rometools.rome.feed.synd.*;
 
 import io.github.pskenny.seadhna.io.NIOUtils;
 

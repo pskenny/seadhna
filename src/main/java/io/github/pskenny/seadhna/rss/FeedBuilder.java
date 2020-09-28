@@ -2,9 +2,10 @@ package io.github.pskenny.seadhna.rss;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import com.sun.syndication.io.*;
 
-import com.sun.syndication.feed.synd.*;
+import com.rometools.rome.feed.synd.*;
+import com.rometools.rome.io.*;
+
 import java.io.*;
 
 /**
