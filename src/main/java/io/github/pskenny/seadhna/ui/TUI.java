@@ -11,6 +11,10 @@ import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
+import com.rometools.rome.feed.synd.*;
+
+import io.github.pskenny.seadhna.io.NIOUtils;
+
 import com.sun.syndication.feed.synd.*;
 
 public class TUI {
