@@ -33,7 +33,7 @@
     <dependency>
       <groupId>com.googlecode.lanterna</groupId>
       <artifactId>lanterna</artifactId>
-      <version>3.0.2</version>
+      <version>3.1.1</version>
     </dependency>
     <!-- Logging-->
     <dependency>
@@ -50,7 +50,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.12</version>
+      <version>1.18.16</version>
       <scope>provided</scope>
     </dependency>
     <!--https://github.com/omajid/xdg-java -->
@@ -58,13 +58,13 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.6.2</version>
+      <version>5.7.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.6.2</version>
+      <version>5.7.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
