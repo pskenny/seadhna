@@ -1,10 +1,12 @@
 package io.github.pskenny.seadhna.ui;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.googlecode.lanterna.Symbols;
 import com.googlecode.lanterna.gui2.ActionListBox;
+import com.googlecode.lanterna.gui2.Window;
 
 public class FeedItemsWindow extends ListenableBasicWindow {
     private HashSet<String> marked;
@@ -32,6 +34,10 @@ public class FeedItemsWindow extends ListenableBasicWindow {
         actionListBox.addItem("Back", this::close);
 
         setComponent(actionListBox);
+        ArrayList<Window.Hint> hints = new ArrayList<>();
+        hints.add(Window.Hint.NO_DECORATIONS);
+        hints.add(Window.Hint.FULL_SCREEN);
+        setHints(hints);
     }
 
     public Set<String> getMarked() {
@@ -58,7 +64,7 @@ public class FeedItemsWindow extends ListenableBasicWindow {
          */
         public void toggleMarked() {
             marked = !marked;
-            if(marked) {
+            if (marked) {
                 FeedItemsWindow.this.marked.add(url);
             } else {
                 FeedItemsWindow.this.marked.remove(url);

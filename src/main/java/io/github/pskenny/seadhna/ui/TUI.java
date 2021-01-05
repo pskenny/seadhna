@@ -3,7 +3,6 @@ package io.github.pskenny.seadhna.ui;
 import java.io.IOException;
 import java.util.*;
 
-import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.screen.Screen;
@@ -35,6 +34,10 @@ public class TUI {
 
             feedsWindow = new BasicWindow();
             feedsWindow.setComponent(getFeedsList());
+            ArrayList<Window.Hint> hints = new ArrayList<>();
+            hints.add(Window.Hint.NO_DECORATIONS);
+            hints.add(Window.Hint.FULL_SCREEN);
+            feedsWindow.setHints(hints);
 
             gui.addWindowAndWait(feedsWindow);
         } catch (IOException ex) {
