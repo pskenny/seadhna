@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 public class IOUtils {
+    // Naive XDG path for url file
+    public static String URL_FILE = System.getProperty("user.home") + File.separator + ".config/seadhna/urls";
 
     /**
      * Return set containing each non-empty line as an element from the file path
