@@ -1,30 +1,26 @@
 package io.github.pskenny.seadhna.ui;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.googlecode.lanterna.Symbols;
-import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.ActionListBox;
-
-import com.sun.syndication.feed.synd.*;
 
 public class FeedItemsWindow extends ListenableBasicWindow {
     private HashSet<String> marked;
     private ActionListBox actionListBox;
-    private List<SyndEntry> items;
+    private HashSet<io.github.pskenny.seadhna.feed.FeedItem> items;
 
-    public FeedItemsWindow(SyndFeed feed, TerminalSize size, Set<String> marked) {
-        actionListBox = new ActionListBox(size);
-        items = feed.getEntries();
+    public FeedItemsWindow(io.github.pskenny.seadhna.feed.Feed feed, Set<String> marked) {
+        actionListBox = new ActionListBox();
+        items = feed.getFeedItems();
         this.marked = new HashSet<>();
 
         // Add feed item titles to list and add action to add their links to the marked
         // list
-        items.forEach(entry -> {
-            String url = entry.getLink();
-            FeedItem fi = new FeedItem(entry.getTitle(), url);
+        items.forEach(feedItem -> {
+            String url = feedItem.getURL();
+            FeedItem fi = new FeedItem(feedItem.getTitle(), url);
             if (marked.contains(url)) {
                 fi.toggleMarked();
             }

@@ -11,11 +11,7 @@ import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
-import com.rometools.rome.feed.synd.*;
-
-import io.github.pskenny.seadhna.io.NIOUtils;
-
-import com.sun.syndication.feed.synd.*;
+import io.github.pskenny.seadhna.feed.*;
 
 public class TUI {
     private Controller controller;
@@ -50,19 +46,19 @@ public class TUI {
      * Returns list of RSS feeds.
      */
     private ActionListBox getFeedsList() {
-        ActionListBox actionListBox = new ActionListBox(getTerminalSize());
+        ActionListBox actionListBox = new ActionListBox();
         // Add feeds to list
-        for (Map.Entry<String, SyndFeed> entry : controller.getFeeds().entrySet()) {
-            actionListBox.addItem(entry.getValue().getTitle(),
+        for (Feed feed : controller.getFeeds()) {
+            actionListBox.addItem(feed.getTitle(),
                     () -> {
-                        FeedItemsWindow fiw = new FeedItemsWindow(entry.getValue(), getTerminalSize(), marked);
-                        fiw.addWindowListener(new ListenableBasicWindow.BasicWindowListener(){
+                        FeedItemsWindow feedItemsWindow = new FeedItemsWindow(feed, marked);
+                        feedItemsWindow.addWindowListener(new ListenableBasicWindow.BasicWindowListener(){
                             @Override
                             public void onClosing() {
-                                marked.addAll(fiw.getMarked());
+                                marked.addAll(feedItemsWindow.getMarked());
                             }
                         });
-                        gui.addWindowAndWait(fiw);
+                        gui.addWindowAndWait(feedItemsWindow);
                     });
         }
         // Add "Quit" item
@@ -76,10 +72,6 @@ public class TUI {
         });
 
         return actionListBox;
-    }
-
-    private TerminalSize getTerminalSize() {
-        return new TerminalSize(screen.getTerminalSize().getColumns() - 5, screen.getTerminalSize().getRows() - 4);
     }
 
     public Set<String> getMarkedLinks() {
