@@ -9,8 +9,6 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
-import com.rometools.rome.feed.synd.*;
-
 /**
  * Give me Youtube videos, just like Séadhna Of House Clam does 👍 🎥
  * 
