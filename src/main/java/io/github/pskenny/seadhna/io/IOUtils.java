@@ -11,7 +11,8 @@ import java.util.Iterator;
 
 public class IOUtils {
     // Naive XDG path for url file
-    public static String URL_FILE = System.getProperty("user.home") + File.separator + ".config/seadhna/urls";
+    public static String CONFIG_FOLDER = System.getProperty("user.home") + File.separator + ".config/seadhna/";
+    public static String URL_FILE = CONFIG_FOLDER + "urls";
 
     /**
      * Return set containing each non-empty line as an element from the file path
