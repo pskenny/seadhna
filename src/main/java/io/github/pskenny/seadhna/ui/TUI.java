@@ -10,9 +10,13 @@ import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.github.pskenny.seadhna.feed.*;
 
 public class TUI {
+    private static Logger LOGGER = LoggerFactory.getLogger(TUI.class);
     private Controller controller;
 
     private HashSet<String> marked;
@@ -41,7 +45,7 @@ public class TUI {
 
             gui.addWindowAndWait(feedsWindow);
         } catch (IOException ex) {
-            System.err.println("Couldn't output to terminal");
+            LOGGER.error("Couldn't output to terminal");
         }
     }
 
@@ -52,17 +56,15 @@ public class TUI {
         ActionListBox actionListBox = new ActionListBox();
         // Add feeds to list
         for (Feed feed : controller.getFeeds()) {
-            actionListBox.addItem(feed.getTitle(),
-                    () -> {
-                        FeedItemsWindow feedItemsWindow = new FeedItemsWindow(feed, marked);
-                        feedItemsWindow.addWindowListener(new ListenableBasicWindow.BasicWindowListener(){
-                            @Override
-                            public void onClosing() {
-                                marked.addAll(feedItemsWindow.getMarked());
-                            }
-                        });
-                        gui.addWindowAndWait(feedItemsWindow);
-                    });
+            // TODO Fix: feed.toString() is called on creation only
+            // If all feed items are marked read, the feeds list still
+            // has same text as creation
+            actionListBox.addItem(feed.toString(), () -> {
+                FeedItemsWindow feedItemsWindow = new FeedItemsWindow(feed);
+                feedItemsWindow.addWindowListener(() -> marked.addAll(feedItemsWindow.getMarked()));
+                feedItemsWindow.addToggleListener(item -> controller.update(item));
+                gui.addWindowAndWait(feedItemsWindow);
+            });
         }
         // Add "Quit" item
         actionListBox.addItem("Quit", () -> {

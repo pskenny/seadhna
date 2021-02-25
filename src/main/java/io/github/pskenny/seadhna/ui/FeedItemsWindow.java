@@ -1,79 +1,142 @@
 package io.github.pskenny.seadhna.ui;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.googlecode.lanterna.Symbols;
+import com.googlecode.lanterna.TerminalPosition;
+import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.ActionListBox;
 import com.googlecode.lanterna.gui2.Window;
+import com.googlecode.lanterna.gui2.WindowListener;
+import com.googlecode.lanterna.input.KeyStroke;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.github.pskenny.seadhna.feed.FeedItem;
 
 public class FeedItemsWindow extends ListenableBasicWindow {
+
+    private static Logger LOGGER = LoggerFactory.getLogger(FeedItemsWindow.class);
     private HashSet<String> marked;
     private ActionListBox actionListBox;
-    private HashSet<io.github.pskenny.seadhna.feed.FeedItem> items;
+    private Set<io.github.pskenny.seadhna.feed.FeedItem> items;
+    private ArrayList<ToggleListener> toggleListeners;
+    // NOTE: This implementation only allows one action per unique keystroke
+    private HashMap<KeyStroke, ListAction> commands;
 
-    public FeedItemsWindow(io.github.pskenny.seadhna.feed.Feed feed, Set<String> marked) {
+    public FeedItemsWindow(io.github.pskenny.seadhna.feed.Feed feed) {
+        this.marked = new HashSet<>();
         actionListBox = new ActionListBox();
         items = feed.getFeedItems();
-        this.marked = new HashSet<>();
+        toggleListeners = new ArrayList<>();
+        commands = new HashMap<>();
 
-        // Add feed item titles to list and add action to add their links to the marked
-        // list
-        items.forEach(feedItem -> {
-            String url = feedItem.getURL();
-            FeedItem fi = new FeedItem(feedItem.getTitle(), url);
-            if (marked.contains(url)) {
-                fi.toggleMarked();
+        // Add feed item titles to list and add action to add their links to toggle item
+        // read
+        items.forEach(feedItem -> actionListBox.addItem(new Runnable() {
+            @Override
+            public void run() {
+                // toggle item read state
+                feedItem.setRead(!feedItem.getRead());
+                fireToggleListeners(feedItem);
+
+                // Don't select next item if current selected item is already at the end
+                if (actionListBox.getSelectedIndex() != actionListBox.getItemCount())
+                    // Select next item
+                    actionListBox.setSelectedIndex(actionListBox.getSelectedIndex() + 1);
             }
 
-            actionListBox.addItem(fi);
-        });
-
-        // Add Back button to open feeds window
-        actionListBox.addItem("Back", this::close);
+            @Override
+            public String toString() {
+                return feedItem.toString();
+            }
+        }));
 
         setComponent(actionListBox);
         ArrayList<Window.Hint> hints = new ArrayList<>();
         hints.add(Window.Hint.NO_DECORATIONS);
         hints.add(Window.Hint.FULL_SCREEN);
         setHints(hints);
+
+        addKeyCommands();
+
+        this.addWindowListener(new WindowListener() {
+            @Override
+            public void onInput(Window basePane, KeyStroke keyStroke, AtomicBoolean deliverEvent) {
+                // Process commands
+                if (commands.containsKey(keyStroke))
+                    commands.get(keyStroke).run(getSelected());
+            }
+
+            @Override
+            public void onUnhandledInput(Window basePane, KeyStroke keyStroke, AtomicBoolean hasBeenHandled) {
+            }
+
+            @Override
+            public void onResized(Window window, TerminalSize oldSize, TerminalSize newSize) {
+            }
+
+            @Override
+            public void onMoved(Window window, TerminalPosition oldPosition, TerminalPosition newPosition) {
+            }
+        });
+    }
+
+    private void addKeyCommands() {
+        // Template: commands.put(new KeyStroke('', false, false), (feedItem) -> {});
+        commands.put(new KeyStroke('q', false, false), feedItem -> close());
+        commands.put(new KeyStroke('m', false, false), feedItem -> toggleMarked(((FeedItem) feedItem).getURL()));
+        commands.put(new KeyStroke('v', false, false), feedItem -> {
+            String url = ((FeedItem) feedItem).getURL();
+            try {
+                LOGGER.info("Opening mpv: {}", url);
+                // Open url in mpv
+                new ProcessBuilder("mpv", url).start();
+            } catch (IOException e) {
+                LOGGER.error("Error opening mpv url: {}", url);
+            }
+        });
+    }
+
+    public FeedItem getSelected() {
+        return (FeedItem) items.toArray()[actionListBox.getSelectedIndex()];
+    }
+
+    public void addToggleListener(ToggleListener listener) {
+        toggleListeners.add(listener);
+    }
+
+    private void fireToggleListeners(FeedItem item) {
+        for (ToggleListener listener : toggleListeners) {
+            listener.toggled(item);
+        }
+    }
+
+    /**
+     * If url already marked remove it, otherwise add url to marked list.
+     */
+    private void toggleMarked(String url) {
+        if (marked.contains(url)) {
+            marked.remove(url);
+        } else {
+            marked.add(url);
+        }
     }
 
     public Set<String> getMarked() {
         return marked;
     }
 
-    private class FeedItem implements Runnable {
-        private boolean marked = false;
-        private String title;
-        private String url;
+    public interface ListAction {
+        public void run(Object listItem);
+    }
 
-        public FeedItem(String title, String url) {
-            this.title = title;
-            this.url = url;
-        }
-
-        @Override
-        public void run() {
-            toggleMarked();
-        }
-
-        /**
-         * Toggle is feed item is marked.
-         */
-        public void toggleMarked() {
-            marked = !marked;
-            if (marked) {
-                FeedItemsWindow.this.marked.add(url);
-            } else {
-                FeedItemsWindow.this.marked.remove(url);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return marked ? Symbols.BULLET + title : title;
-        }
+    public interface ToggleListener {
+        public void toggled(FeedItem item);
     }
 }
