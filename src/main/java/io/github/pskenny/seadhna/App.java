@@ -2,6 +2,8 @@ package io.github.pskenny.seadhna;
 
 import java.util.*;
 
+import org.apache.log4j.BasicConfigurator;
+
 import io.github.pskenny.seadhna.io.IOUtils;
 import io.github.pskenny.seadhna.ui.TUI;
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -28,21 +30,23 @@ public class App {
      */
     private void writeMarkedURLs(Set<String> urls) {
         // Write to stdout if no file path
-        if(filePath == null) {
+        if (filePath == null) {
             urls.forEach(System.out::println);
         } else {
             boolean success = IOUtils.writeIteratorToFile(urls.iterator(), filePath);
             // check if successful, output error message on failure
-            if(!success) {
+            if (!success) {
                 System.err.println("Could not write to file: \"" + filePath + "\"");
             }
         }
     }
 
     public static void main(String[] args) {
+        BasicConfigurator.configure();
+
         ArgumentParser parser = ArgumentParsers.newFor("seadhna").build()
                 .description("Mark YouTube channel video URLs to write out.").version("0.1");
-        parser.addArgument("-f", "-file").metavar("FILE").type(String.class).help("File to write URLs to");
+        parser.addArgument("-f", "-file").metavar("FILE").type(String.class).help("Output file");
 
         try {
             Namespace res = parser.parseArgs(args);
