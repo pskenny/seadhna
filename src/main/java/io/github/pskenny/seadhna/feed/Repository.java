@@ -1,19 +1,25 @@
 package io.github.pskenny.seadhna.feed;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 
-import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.github.pskenny.seadhna.db.Database;
 import io.github.pskenny.seadhna.io.IOUtils;
 import io.github.pskenny.seadhna.rss.FeedBuilder;
 
 public class Repository {
+    private static Logger LOGGER = LoggerFactory.getLogger(Repository.class);
     private static Repository repo;
+    private Database db;
 
     private Repository() {
+        db = new Database();
     }
 
     public static Repository getRepository() {
@@ -23,31 +29,27 @@ public class Repository {
         return repo;
     }
 
-    public HashSet<Feed> loadFeeds() {
-        HashSet<Feed> feeds = new HashSet<>();
+    public Collection<Feed> getFeeds() {
+        return db.getFeeds();
+    }
 
+    public void loadFeeds() {
         HashSet<String> feedUrls = null;
         try {
             feedUrls = IOUtils.pathToLines(IOUtils.URL_FILE);
             // Make feed items from all RSS feed URLs
             feedUrls.parallelStream().forEach(url -> {
-                SyndFeed syndFeed = FeedBuilder.getFeed(url);
+                SyndFeed feed = FeedBuilder.getFeed(url);
                 // Only add feeds which URL worked
-                if (syndFeed != null) {
-                    syndFeed.getTitle();
-                    List<SyndEntry> f = syndFeed.getEntries();
-                    HashSet<FeedItem> fi = new HashSet<>();
-                    f.forEach(item -> {
-                        fi.add(new FeedItem(item.getTitle(), item.getLink()));
-                    });
-                    Feed feed = new Feed(syndFeed.getTitle(), fi);
-                    feeds.add(feed);
-                }
+                if (feed != null)
+                    db.load(feed);
             });
         } catch (IOException ex) {
-            System.err.println("Error reading from URLs file: " + IOUtils.URL_FILE);
+            LOGGER.error("Error reading from URLs file: {}", IOUtils.URL_FILE);
         }
+    }
 
-        return feeds;
+    public void update(FeedItem item) {
+        db.setRead(item.getURL(), item.getRead());
     }
 }
