@@ -6,29 +6,38 @@ import java.net.URL;
 import com.rometools.rome.feed.synd.*;
 import com.rometools.rome.io.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 /**
  * 
  */
 public class FeedBuilder {
+    private static Logger LOGGER = LoggerFactory.getLogger(FeedBuilder.class);
 
-    public static SyndFeed getFeed(String url) {
-        SyndFeed feed = null;
-        
+    private FeedBuilder() {
+    }
+
+    public static synchronized SyndFeed getFeed(String url) {
         try {
+            LOGGER.debug("Loading url: {}", url);
+
+            XmlReader xml = new XmlReader(new URL(url));
             SyndFeedInput input = new SyndFeedInput();
-            feed = input.build(new XmlReader(new URL(url)));
+
+            return input.build(xml);
         } catch (MalformedURLException ex) {
-            System.err.printf("URL error: %s\n", url);
-        }  catch (IOException ex) {
+            LOGGER.error("URL error: {}", url);
+        } catch (IOException ex) {
             // Probably can't reach URL
-            System.err.printf("URL error: %s\n", url);
+            LOGGER.error("URL error: {}", url);
         } catch (FeedException ex) {
             // Feed's bust, skip it
-            System.err.printf("Feed error: %s\n", url);
+            LOGGER.error("Feed error: {}", url);
         }
 
-        return feed;
+        return null;
     }
 }
