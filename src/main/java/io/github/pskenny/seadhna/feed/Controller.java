@@ -1,19 +1,20 @@
 package io.github.pskenny.seadhna.feed;
 
-import java.util.HashSet;
+import java.util.Collection;
 
 public class Controller {
     private Repository repo;
-    private HashSet<Feed> feeds;
 
     public Controller() {
         repo = Repository.getRepository();
-        feeds = new HashSet<>();
-
-        feeds = repo.loadFeeds();
+        repo.loadFeeds();
     }
 
-    public HashSet<Feed> getFeeds() {
-        return feeds;
+    public Collection<Feed> getFeeds() {
+        return repo.getFeeds();
+    }
+
+    public void update(FeedItem item) {
+        repo.update(item);
     }
 }
