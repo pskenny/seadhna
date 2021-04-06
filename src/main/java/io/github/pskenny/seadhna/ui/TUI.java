@@ -45,7 +45,7 @@ public class TUI {
 
             gui.addWindowAndWait(feedsWindow);
         } catch (IOException ex) {
-            LOGGER.error("Couldn't output to terminal");
+            LOGGER.error("Couldn't output to terminal: " + ex.getMessage());
         }
     }
 
