@@ -1,6 +1,6 @@
 # seadhna
 
-__NOTE:__ This is in alpha, do not use.
+__NOTE:__ Archived. See [mps-youtube](https://github.com/mps-youtube/mps-youtube).
 
 Mark YouTube channel video URLs to output to [stdout](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)). Uses channel RSS feeds to avoid using official YouTube API.
 
